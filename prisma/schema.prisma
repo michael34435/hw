@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Status {
+  TODO
+  DONE
+}
+
+model User {
+  id                 Int                  @id @default(autoincrement())
+  account            String               @unique
+  password           String
+  user               Task[]               @relation("userTasks")
+  reviewer           Task[]               @relation("reviewerTasks")
+  assignee           Task[]               @relation("assigneeTasks")
+  TaskHistoryComment TaskHistoryComment[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+}
+
+model Task {
+  id             Int           @id @default(autoincrement())
+  status         Status?       @default(TODO)
+  reviewerUserId Int?
+  assigneeUserId Int?
+  userId         Int
+  parentId       Int?
+  parent         Task?         @relation("parentTasks", fields: [parentId], references: [id])
+  user           User?         @relation("userTasks", fields: [userId], references: [id])
+  reviewer       User?         @relation("reviewerTasks", fields: [reviewerUserId], references: [id])
+  assignee       User?         @relation("assigneeTasks", fields: [assigneeUserId], references: [id])
+  histories      TaskHistory[]
+  children       Task[]        @relation("parentTasks")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  finishedAt     DateTime?     @db.Timestamp(0)
+}
+
+model TaskHistory {
+  id        Int                  @id @default(autoincrement())
+  taskId    Int
+  title     String
+  content   String
+  task      Task                 @relation(fields: [taskId], references: [id])
+  comments  TaskHistoryComment[]
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+}
+
+model TaskHistoryComment {
+  id            Int         @id @default(autoincrement())
+  taskHistoryId Int
+  userId        Int
+  content       String
+  user          User        @relation(fields: [userId], references: [id])
+  taskHistory   TaskHistory @relation(fields: [taskHistoryId], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
