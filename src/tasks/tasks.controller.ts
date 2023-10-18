@@ -76,6 +76,14 @@ export class TasksController {
       },
     ];
 
+    if (!reviewerUserId) {
+      filterOperator.push({ reviewerUserId: req['user'].id });
+    }
+
+    if (!assigneeUserId) {
+      filterOperator.push({ assigneeUserId: req['user'].id });
+    }
+
     if (!(reviewerUserId && assigneeUserId)) {
       filterOperator.push({ userId: req['user'].id });
     }
