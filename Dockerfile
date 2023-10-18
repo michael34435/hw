@@ -6,6 +6,7 @@ COPY . .
 
 RUN npm install && \
   npm i -g @nestjs/cli && \
+  npx prisma generate && \
   nest build
 
 FROM node:18.18.2-alpine3.17 as prod
